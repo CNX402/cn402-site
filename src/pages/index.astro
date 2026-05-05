@@ -1,17 +1,158 @@
 ---
-
+const endpoints = [
+  { path: '/forex',   price: '$0.03', desc: 'CNY exchange rates — onshore CNY + offshore CNH, real-time.', status: 'planned' },
+  { path: '/holiday', price: '$0.01', desc: 'China official holidays & workday lookup with makeup days.', status: 'planned' },
+  { path: '/astock',  price: '$0.10', desc: 'A-share market snapshot — SSE/SZSE indices, northbound flow.', status: 'planned' },
+  { path: '/crypto',  price: '$0.05', desc: 'Multi-asset crypto snapshot with RSI/MA technical indicators.', status: 'planned' },
+];
 ---
-
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="China Data Gateway for AI agents. Pay-per-call APIs over X402 protocol, settled in USDC on Base." />
+    <title>cn402 — China Data Gateway for AI Agents</title>
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --fg: #e5e5e5;
+        --dim: #888;
+        --accent: #00d4ff;
+        --accent2: #ff3366;
+        --line: #222;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: -apple-system, 'SF Mono', Consolas, 'Microsoft YaHei', monospace;
+        line-height: 1.6;
+        padding: 60px 24px;
+        max-width: 880px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      h1 .accent { color: var(--accent); }
+      .tagline {
+        color: var(--dim);
+        font-size: 15px;
+        margin-bottom: 48px;
+      }
+      h2 {
+        font-size: 13px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--dim);
+        margin: 48px 0 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      p { margin-bottom: 12px; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      code {
+        background: #1a1a1a;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 13px;
+        color: var(--accent);
+      }
+      pre {
+        background: #1a1a1a;
+        padding: 16px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 13px;
+        margin: 12px 0;
+        border-left: 2px solid var(--accent);
+      }
+      pre code { background: none; padding: 0; color: var(--fg); }
+      .endpoints {
+        display: grid;
+        gap: 12px;
+      }
+      .endpoint {
+        display: grid;
+        grid-template-columns: 110px 70px 1fr 80px;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+        align-items: center;
+      }
+      .endpoint .path { color: var(--accent); font-weight: 500; }
+      .endpoint .price { color: var(--accent2); }
+      .endpoint .desc { color: var(--fg); }
+      .endpoint .badge {
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .badge.live { background: #0a3a1a; color: #4ade80; }
+      .badge.planned { background: #1a1a2a; color: #888; }
+      footer {
+        margin-top: 80px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        color: var(--dim);
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+      }
+      @media (max-width: 600px) {
+        .endpoint {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+        footer { flex-direction: column; gap: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>cn<span class="accent">402</span></h1>
+    <div class="tagline">China Data Gateway for AI Agents · 中国数据 · 直供 AI 代理</div>
+
+    <p>Pay-per-call APIs designed for autonomous agents. Built on the <strong>X402</strong> protocol — settled in USDC on Base, no accounts, no API keys, no subscriptions.</p >
+    <p>Your agent makes a request, receives a 402, signs the payment, gets the data. Sub-second.</p >
+
+    <h2>Endpoints</h2>
+    <div class="endpoints">
+      {endpoints.map(e => (
+        <div class="endpoint">
+          <span class="path">{e.path}</span>
+          <span class="price">{e.price}</span>
+          <span class="desc">{e.desc}</span>
+          <span class={`badge ${e.status}`}>{e.status}</span>
+        </div>
+      ))}
+    </div>
+
+    <h2>How it works</h2>
+    <p>X402 is HTTP's native payment standard. The server returns <code>402 Payment Required</code> with payment terms; the client signs an EIP-3009 authorization; the facilitator settles on-chain; the request is fulfilled. End-to-end in roughly one second.</p >
+    <pre><code>{`curl https://api.cn402.com/forex?pair=USDCNY
+# HTTP/1.1 402 Payment Required
+# X-Payment-Required: { network: "base", amount: "30000", asset: "USDC", ... }
+# agent signs and retries with payment header
+# HTTP/1.1 200 OK
+# { "pair": "USDCNY", "onshore": 7.21, "offshore": 7.24, ... }`}</code></pre>
+
+    <h2>Why cn402</h2>
+    <p>Most agent-facing APIs are US-centric. cn402 closes the China data gap — A-share quotes, CNY rates, mainland holidays — priced for the high-frequency consumption pattern of autonomous agents, settled trustlessly on Base.</p >
+
+    <h2>Status</h2>
+    <p>Infrastructure is live. Endpoints are being built and rolled out one at a time.</p >
+    <p>Solo project. <a href=" ">github.com/CNX402</a ></p >
+
+    <footer>
+      <span>cn402 · 2026</span>
+      <span>Powered by X402</span>
+    </footer>
+  </body>
 </html>
